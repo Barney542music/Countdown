@@ -241,10 +241,6 @@ h1 {
     margin-top: 12px;
 }
 
-.hidden {
-    display: none;
-}
-
 @media (max-width: 480px) {
     .panel {
         padding: 22px;
@@ -312,22 +308,31 @@ h1 {
         <h2>BARNEY</h2>
         <p class="panel-subtitle">CONTROL ROOM LOGIN</p>
 
-        <label for="password">Demo password</label>
+        <label for="email">Email address</label>
+        <input
+            type="email"
+            id="email"
+            placeholder="Your admin email"
+            autocomplete="username"
+        >
+
+        <label for="password">Password</label>
         <input
             type="password"
             id="password"
-            placeholder="Enter demo password"
+            placeholder="Your admin password"
+            autocomplete="current-password"
         >
 
-        <button onclick="login()">ENTER CONTROL ROOM</button>
+        <button id="loginButton" onclick="login()">
+            ENTER CONTROL ROOM
+        </button>
 
         <button class="close-button" onclick="closePanels()">
             CLOSE
         </button>
 
-        <p class="status" id="loginStatus">
-            Prototype only — not a secure login.
-        </p>
+        <p class="status" id="loginStatus"></p>
 
     </div>
 </div>
@@ -342,25 +347,25 @@ h1 {
         <p class="panel-subtitle">WELCOME BACK, BARNEY.</p>
 
         <label for="announcementText">New announcement</label>
+
         <textarea
             id="announcementText"
             placeholder="Write an update for your visitors..."
         ></textarea>
 
-        <button onclick="publishAnnouncement()">
-            POST ANNOUNCEMENT
+        <button id="publishButton" onclick="publishAnnouncement()">
+            PUBLISH ANNOUNCEMENT
         </button>
 
-        <label for="audioUpload">Upload a song preview</label>
+        <p class="status" id="adminStatus"></p>
+
+        <label for="audioUpload">Local song preview</label>
+
         <input
             type="file"
             id="audioUpload"
             accept="audio/*"
         >
-
-        <button class="secondary" onclick="playPreview()">
-            PLAY PREVIEW
-        </button>
 
         <audio
             id="audioPlayer"
@@ -368,7 +373,9 @@ h1 {
             controls
         ></audio>
 
-        <p class="status" id="adminStatus"></p>
+        <p class="status">
+            Audio preview is currently local to your browser.
+        </p>
 
         <button class="close-button" onclick="logout()">
             LOG OUT
@@ -378,17 +385,32 @@ h1 {
 </div>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 
+// SUPABASE CONNECTION
+
+const SUPABASE_URL =
+    "https://qotpimsfpsypnvqirhea.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_GWIi5oai-AJuHOOfhZXR9A_aWBojn7q";
+
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
 // RELEASE DATE: 1 NOVEMBER 2026 AT 12 PM UK TIME
+
 const releaseDate =
     new Date("2026-11-01T12:00:00+00:00").getTime();
 
-// COVER REVEAL STARTS: 31 OCTOBER AT MIDNIGHT
 const revealStart =
     new Date("2026-10-31T00:00:00+00:00").getTime();
 
-// COVER FULLY VISIBLE: 1 NOVEMBER AT 10 AM
 const revealEnd =
     new Date("2026-11-01T10:00:00+00:00").getTime();
 
@@ -397,7 +419,6 @@ function updateWebsite() {
 
     const now = Date.now();
 
-    // GRADUALLY REVEAL THE COVER
     let progress = (now - revealStart) /
                    (revealEnd - revealStart);
 
@@ -405,8 +426,6 @@ function updateWebsite() {
 
     document.getElementById("cover").style.opacity = progress;
 
-
-    // UPDATE COUNTDOWN
     const distance = releaseDate - now;
 
     if (distance <= 0) {
@@ -453,17 +472,14 @@ function updateWebsite() {
 }
 
 
-// CONTROL ROOM
+// CONTROL ROOM LOGIN
 
 const loginModal = document.getElementById("loginModal");
 const adminModal = document.getElementById("adminModal");
 
-// This is a public demo code, NOT a secure password.
-const demoPassword = "BARNEY-DEMO";
-
 function openLogin() {
     loginModal.classList.add("open");
-    document.getElementById("password").focus();
+    document.getElementById("email").focus();
 }
 
 function closePanels() {
@@ -471,23 +487,50 @@ function closePanels() {
     adminModal.classList.remove("open");
 }
 
-function login() {
-    const enteredPassword =
-        document.getElementById("password").value;
+async function login() {
 
-    if (enteredPassword === demoPassword) {
-        loginModal.classList.remove("open");
-        adminModal.classList.add("open");
-        document.getElementById("loginStatus").innerText = "";
-    } else {
-        document.getElementById("loginStatus").innerText =
-            "That demo password isn't correct.";
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    const status = document.getElementById("loginStatus");
+    const button = document.getElementById("loginButton");
+
+    if (!email || !password) {
+        status.innerText = "Enter your email and password.";
+        return;
     }
+
+    button.disabled = true;
+    button.innerText = "SIGNING IN...";
+    status.innerText = "";
+
+    const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+    button.disabled = false;
+    button.innerText = "ENTER CONTROL ROOM";
+
+    if (error) {
+        status.innerText = error.message;
+        return;
+    }
+
+    loginModal.classList.remove("open");
+    adminModal.classList.add("open");
+
+    document.getElementById("password").value = "";
+    document.getElementById("adminStatus").innerText =
+        "You're signed in. Ready to publish.";
 }
 
-function logout() {
+async function logout() {
+
+    await supabaseClient.auth.signOut();
+
     adminModal.classList.remove("open");
-    document.getElementById("password").value = "";
 }
 
 
@@ -496,11 +539,13 @@ function logout() {
 document.addEventListener("keydown", function(event) {
 
     if (event.key === "F2") {
+
         event.preventDefault();
 
-        if (adminModal.classList.contains("open")) {
-            closePanels();
-        } else if (loginModal.classList.contains("open")) {
+        if (
+            adminModal.classList.contains("open") ||
+            loginModal.classList.contains("open")
+        ) {
             closePanels();
         } else {
             openLogin();
@@ -513,63 +558,154 @@ document.addEventListener("keydown", function(event) {
 
     if (
         event.key === "Enter" &&
-        loginModal.classList.contains("open")
+        loginModal.classList.contains("open") &&
+        document.activeElement.id !== "email"
     ) {
         login();
     }
 });
 
 
-// ANNOUNCEMENTS
+// DISPLAY AN ANNOUNCEMENT
 
-function publishAnnouncement() {
+function displayAnnouncement(message, createdAt) {
+
+    const container =
+        document.getElementById("publicAnnouncement");
+
+    container.replaceChildren();
+
+    if (!message) return;
+
+    const box = document.createElement("div");
+    box.className = "announcement";
+
+    const heading = document.createElement("strong");
+    heading.innerText = "LATEST UPDATE";
+
+    const text = document.createElement("p");
+    text.innerText = message;
+    text.style.marginTop = "10px";
+
+    const date = document.createElement("small");
+
+    if (createdAt) {
+        date.innerText = new Date(createdAt).toLocaleString();
+    }
+
+    box.appendChild(heading);
+    box.appendChild(text);
+    box.appendChild(date);
+
+    container.appendChild(box);
+}
+
+
+// LOAD THE LATEST ANNOUNCEMENT
+
+async function loadLatestAnnouncement() {
+
+    const { data, error } = await supabaseClient
+        .from("announcements")
+        .select("message, created_at")
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(1);
+
+    if (error) {
+        console.error("Announcement loading error:", error);
+        return;
+    }
+
+    if (data && data.length > 0) {
+        displayAnnouncement(
+            data[0].message,
+            data[0].created_at
+        );
+    }
+}
+
+
+// PUBLISH A SHARED ANNOUNCEMENT
+
+async function publishAnnouncement() {
 
     const text =
         document.getElementById("announcementText").value.trim();
 
+    const status =
+        document.getElementById("adminStatus");
+
+    const button =
+        document.getElementById("publishButton");
+
     if (!text) {
-        document.getElementById("adminStatus").innerText =
-            "Write an announcement first.";
+        status.innerText = "Write an announcement first.";
         return;
     }
 
-    localStorage.setItem("barneyAnnouncement", text);
+    button.disabled = true;
+    button.innerText = "PUBLISHING...";
+    status.innerText = "";
 
-    displayAnnouncement();
+    const { data: userData } =
+        await supabaseClient.auth.getUser();
+
+    if (!userData.user) {
+        status.innerText = "Please log in again.";
+        button.disabled = false;
+        button.innerText = "PUBLISH ANNOUNCEMENT";
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from("announcements")
+        .insert({
+            message: text
+        });
+
+    button.disabled = false;
+    button.innerText = "PUBLISH ANNOUNCEMENT";
+
+    if (error) {
+        status.innerText = "Publishing failed: " + error.message;
+        return;
+    }
 
     document.getElementById("announcementText").value = "";
 
-    document.getElementById("adminStatus").innerText =
-        "Announcement saved in this browser!";
-}
+    status.innerText =
+        "Published! Visitors are receiving your announcement.";
 
-function displayAnnouncement() {
-
-    const text = localStorage.getItem("barneyAnnouncement");
-    const container =
-        document.getElementById("publicAnnouncement");
-
-    container.innerHTML = "";
-
-    if (text) {
-        const box = document.createElement("div");
-        box.className = "announcement";
-
-        const heading = document.createElement("strong");
-        heading.innerText = "LATEST UPDATE";
-
-        const message = document.createElement("p");
-        message.innerText = text;
-        message.style.marginTop = "10px";
-
-        box.appendChild(heading);
-        box.appendChild(message);
-        container.appendChild(box);
-    }
+    await loadLatestAnnouncement();
 }
 
 
-// AUDIO PREVIEW
+// LIVE UPDATES FOR ALL VISITORS
+
+const announcementChannel = supabaseClient
+    .channel("public-announcements")
+    .on(
+        "postgres_changes",
+        {
+            event: "INSERT",
+            schema: "public",
+            table: "announcements"
+        },
+        function(payload) {
+
+            displayAnnouncement(
+                payload.new.message,
+                payload.new.created_at
+            );
+        }
+    )
+    .subscribe(function(status) {
+        console.log("Announcement live connection:", status);
+    });
+
+
+// LOCAL AUDIO PREVIEW
 
 let previewURL = null;
 
@@ -587,32 +723,21 @@ document.getElementById("audioUpload").addEventListener(
 
         previewURL = URL.createObjectURL(file);
 
-        const player = document.getElementById("audioPlayer");
-        player.src = previewURL;
+        document.getElementById("audioPlayer").src =
+            previewURL;
 
         document.getElementById("adminStatus").innerText =
             "Preview loaded. Press play to listen.";
     }
 );
 
-function playPreview() {
 
-    const player = document.getElementById("audioPlayer");
+// INITIALISE WEBSITE
 
-    if (!player.src) {
-        document.getElementById("adminStatus").innerText =
-            "Upload an audio file first.";
-        return;
-    }
-
-    player.play();
-}
-
-
-// UPDATE EVERY SECOND
 updateWebsite();
 setInterval(updateWebsite, 1000);
-displayAnnouncement();
+
+loadLatestAnnouncement();
 
 </script>
 
