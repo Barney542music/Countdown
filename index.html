@@ -539,26 +539,32 @@ async function login() {
     button.innerText = "SIGNING IN...";
     status.innerText = "";
 
-    const { error } =
-        await supabaseClient.auth.signInWithPassword({
-            email,
-            password
-        });
+    try {
 
-    button.disabled = false;
-    button.innerText = "ENTER CONTROL ROOM";
+        const { error } =
+            await supabaseClient.auth.signInWithPassword({
+                email,
+                password
+            });
 
-    if (error) {
+        if (error) throw error;
+
+        loginModal.classList.remove("open");
+        adminModal.classList.add("open");
+
+        document.getElementById("password").value = "";
+        document.getElementById("adminStatus").innerText =
+            "You're signed in. Ready to publish.";
+
+    } catch (error) {
+
         status.innerText = error.message;
-        return;
+
+    } finally {
+
+        button.disabled = false;
+        button.innerText = "ENTER CONTROL ROOM";
     }
-
-    loginModal.classList.remove("open");
-    adminModal.classList.add("open");
-
-    document.getElementById("password").value = "";
-    document.getElementById("adminStatus").innerText =
-        "You're signed in. Ready to publish.";
 }
 
 async function logout() {
@@ -594,7 +600,8 @@ document.addEventListener("keydown", function(event) {
     if (
         event.key === "Enter" &&
         loginModal.classList.contains("open") &&
-        document.activeElement.id !== "email"
+        document.activeElement.id !== "email" &&
+        document.activeElement.id !== "loginButton"
     ) {
         login();
     }
@@ -683,36 +690,40 @@ async function publishAnnouncement() {
     button.innerText = "PUBLISHING...";
     status.innerText = "";
 
-    const { data: userData } =
-        await supabaseClient.auth.getUser();
+    try {
 
-    if (!userData.user) {
-        status.innerText = "Please log in again.";
+        const { data: userData, error: userError } =
+            await supabaseClient.auth.getUser();
+
+        if (userError || !userData.user) {
+            throw new Error("Please log in again.");
+        }
+
+        const { error } = await supabaseClient
+            .from("announcements")
+            .insert({
+                message: text
+            });
+
+        if (error) throw error;
+
+        document.getElementById("announcementText").value = "";
+
+        status.innerText =
+            "Published! Visitors are receiving your announcement.";
+
+        await loadLatestAnnouncement();
+
+    } catch (error) {
+
+        status.innerText =
+            "Publishing failed: " + error.message;
+
+    } finally {
+
         button.disabled = false;
         button.innerText = "PUBLISH ANNOUNCEMENT";
-        return;
     }
-
-    const { error } = await supabaseClient
-        .from("announcements")
-        .insert({
-            message: text
-        });
-
-    button.disabled = false;
-    button.innerText = "PUBLISH ANNOUNCEMENT";
-
-    if (error) {
-        status.innerText = "Publishing failed: " + error.message;
-        return;
-    }
-
-    document.getElementById("announcementText").value = "";
-
-    status.innerText =
-        "Published! Visitors are receiving your announcement.";
-
-    await loadLatestAnnouncement();
 }
 
 
@@ -745,9 +756,10 @@ const announcementChannel = supabaseClient
 const AUDIO_BUCKET = "song-previews";
 
 let currentPublicAudioUrl = "";
-let pendingPublicAudioUrl = "";
 let isCheckingAudio = false;
 
+
+// IMMEDIATELY REPLACE THE OLD PUBLIC PREVIEW
 
 function showPublicAudio(url) {
 
@@ -757,38 +769,27 @@ function showPublicAudio(url) {
     const status =
         document.getElementById("publicAudioStatus");
 
+    // Don't restart the player if the preview hasn't changed.
+
     if (url === currentPublicAudioUrl) return;
 
-    // If someone is listening, wait until the track finishes
-    // before changing the audio source.
+    // Stop the old preview immediately.
 
-    if (!player.paused && !player.ended) {
-        pendingPublicAudioUrl = url;
-        status.innerText =
-            "A new preview is ready and will appear after this one finishes.";
-        return;
-    }
+    player.pause();
+
+    // Remember the new preview.
 
     currentPublicAudioUrl = url;
-    pendingPublicAudioUrl = "";
+
+    // Replace the old audio source.
 
     player.src = url;
     player.hidden = false;
+    player.load();
 
-    status.innerText = "Listen to the latest song preview.";
+    status.innerText =
+        "New preview available — press play!";
 }
-
-
-// Apply a waiting update when the current track finishes.
-
-document.getElementById("publicAudioPlayer")
-    .addEventListener("ended", function() {
-
-        if (pendingPublicAudioUrl) {
-            const newUrl = pendingPublicAudioUrl;
-            showPublicAudio(newUrl);
-        }
-    });
 
 
 // LOAD THE MOST RECENT UPLOADED AUDIO FOR ALL VISITORS
@@ -840,6 +841,9 @@ async function loadLatestAudio() {
             .storage
             .from(AUDIO_BUCKET)
             .getPublicUrl(latestFile.name);
+
+        // This switches the preview immediately when a new
+        // upload is detected, even if someone is listening.
 
         showPublicAudio(publicData.publicUrl);
 
@@ -931,10 +935,13 @@ async function uploadAudio() {
 
         // Update the admin preview.
 
-        document.getElementById("audioPlayer").src =
-            publicData.publicUrl;
+        const adminPlayer =
+            document.getElementById("audioPlayer");
 
-        document.getElementById("audioPlayer").hidden = false;
+        adminPlayer.pause();
+        adminPlayer.src = publicData.publicUrl;
+        adminPlayer.hidden = false;
+        adminPlayer.load();
 
         status.innerText =
             "Uploaded! Your preview is now available to website visitors.";
