@@ -73,6 +73,12 @@ h1 {
     border-radius: 8px;
     clip-path: inset(100% 0 0 0);
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+
+    /* PREVENT DRAGGING OR SELECTING THE HIDDEN COVER */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
 }
 
 .countdown {
@@ -289,6 +295,7 @@ h1 {
         id="cover"
         src="cover.png"
         alt="Late Night Thoughts album cover"
+        draggable="false"
     >
 
     <div class="countdown" id="countdown">
@@ -842,8 +849,7 @@ async function loadLatestAudio() {
             .from(AUDIO_BUCKET)
             .getPublicUrl(latestFile.name);
 
-        // This switches the preview immediately when a new
-        // upload is detected, even if someone is listening.
+        // Switch the preview as soon as a new upload is detected.
 
         showPublicAudio(publicData.publicUrl);
 
