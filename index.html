@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>BARNEY | LATE NIGHT THOUGHTS</title>
 
 <style>
@@ -112,6 +111,145 @@ h1 {
     letter-spacing: 2px;
 }
 
+/* CONTROL ROOM */
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    background: rgba(2, 4, 15, 0.92);
+    backdrop-filter: blur(12px);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal.open {
+    display: flex;
+}
+
+.panel {
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+    background: #111a32;
+    border: 1px solid #526ba8;
+    border-radius: 18px;
+    box-shadow: 0 0 45px rgba(90,120,255,0.2);
+    text-align: left;
+}
+
+.panel h2 {
+    text-align: center;
+    color: #b8c8ff;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+}
+
+.panel-subtitle {
+    text-align: center;
+    color: #8996bb;
+    font-size: 12px;
+    margin-bottom: 25px;
+}
+
+.panel label {
+    display: block;
+    color: #b8c8ff;
+    font-size: 13px;
+    margin: 18px 0 8px;
+}
+
+.panel input,
+.panel textarea {
+    width: 100%;
+    padding: 13px;
+    background: #080f22;
+    border: 1px solid #394b78;
+    border-radius: 8px;
+    color: white;
+    font: inherit;
+}
+
+.panel textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.panel button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 15px;
+    background: #718cff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.panel button:hover {
+    background: #91a5ff;
+}
+
+.panel .secondary {
+    background: #263454;
+}
+
+.panel .close-button {
+    background: transparent;
+    border: 1px solid #526ba8;
+}
+
+.status {
+    color: #a9baff;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 15px;
+    min-height: 18px;
+}
+
+.announcement {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 12px;
+    text-align: left;
+}
+
+.announcement small {
+    display: block;
+    color: #8996bb;
+    margin-bottom: 7px;
+}
+
+#publicAnnouncement {
+    max-width: 500px;
+    margin: 20px auto;
+}
+
+#publicAnnouncement:empty {
+    display: none;
+}
+
+.preview-player {
+    width: 100%;
+    margin-top: 12px;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 480px) {
+    .panel {
+        padding: 22px;
+    }
+}
 </style>
 </head>
 
@@ -136,7 +274,6 @@ h1 {
     >
 
     <div class="countdown" id="countdown">
-
         <div class="box">
             <div class="number" id="days">00</div>
             <div class="label">DAYS</div>
@@ -156,14 +293,90 @@ h1 {
             <div class="number" id="seconds">00</div>
             <div class="label">SECONDS</div>
         </div>
-
     </div>
+
+    <div id="publicAnnouncement"></div>
 
     <div class="footer" id="footer">
         OUT 1 NOVEMBER · 12:00 PM UK TIME
     </div>
 
 </div>
+
+
+<!-- LOGIN WINDOW -->
+
+<div class="modal" id="loginModal">
+    <div class="panel">
+
+        <h2>BARNEY</h2>
+        <p class="panel-subtitle">CONTROL ROOM LOGIN</p>
+
+        <label for="password">Demo password</label>
+        <input
+            type="password"
+            id="password"
+            placeholder="Enter demo password"
+        >
+
+        <button onclick="login()">ENTER CONTROL ROOM</button>
+
+        <button class="close-button" onclick="closePanels()">
+            CLOSE
+        </button>
+
+        <p class="status" id="loginStatus">
+            Prototype only — not a secure login.
+        </p>
+
+    </div>
+</div>
+
+
+<!-- ADMIN DASHBOARD -->
+
+<div class="modal" id="adminModal">
+    <div class="panel">
+
+        <h2>CONTROL ROOM</h2>
+        <p class="panel-subtitle">WELCOME BACK, BARNEY.</p>
+
+        <label for="announcementText">New announcement</label>
+        <textarea
+            id="announcementText"
+            placeholder="Write an update for your visitors..."
+        ></textarea>
+
+        <button onclick="publishAnnouncement()">
+            POST ANNOUNCEMENT
+        </button>
+
+        <label for="audioUpload">Upload a song preview</label>
+        <input
+            type="file"
+            id="audioUpload"
+            accept="audio/*"
+        >
+
+        <button class="secondary" onclick="playPreview()">
+            PLAY PREVIEW
+        </button>
+
+        <audio
+            id="audioPlayer"
+            class="preview-player"
+            controls
+        ></audio>
+
+        <p class="status" id="adminStatus"></p>
+
+        <button class="close-button" onclick="logout()">
+            LOG OUT
+        </button>
+
+    </div>
+</div>
+
 
 <script>
 
@@ -240,9 +453,166 @@ function updateWebsite() {
 }
 
 
+// CONTROL ROOM
+
+const loginModal = document.getElementById("loginModal");
+const adminModal = document.getElementById("adminModal");
+
+// This is a public demo code, NOT a secure password.
+const demoPassword = "BARNEY-DEMO";
+
+function openLogin() {
+    loginModal.classList.add("open");
+    document.getElementById("password").focus();
+}
+
+function closePanels() {
+    loginModal.classList.remove("open");
+    adminModal.classList.remove("open");
+}
+
+function login() {
+    const enteredPassword =
+        document.getElementById("password").value;
+
+    if (enteredPassword === demoPassword) {
+        loginModal.classList.remove("open");
+        adminModal.classList.add("open");
+        document.getElementById("loginStatus").innerText = "";
+    } else {
+        document.getElementById("loginStatus").innerText =
+            "That demo password isn't correct.";
+    }
+}
+
+function logout() {
+    adminModal.classList.remove("open");
+    document.getElementById("password").value = "";
+}
+
+
+// F2 OPENS THE LOGIN WINDOW
+
+document.addEventListener("keydown", function(event) {
+
+    if (event.key === "F2") {
+        event.preventDefault();
+
+        if (adminModal.classList.contains("open")) {
+            closePanels();
+        } else if (loginModal.classList.contains("open")) {
+            closePanels();
+        } else {
+            openLogin();
+        }
+    }
+
+    if (event.key === "Escape") {
+        closePanels();
+    }
+
+    if (
+        event.key === "Enter" &&
+        loginModal.classList.contains("open")
+    ) {
+        login();
+    }
+});
+
+
+// ANNOUNCEMENTS
+
+function publishAnnouncement() {
+
+    const text =
+        document.getElementById("announcementText").value.trim();
+
+    if (!text) {
+        document.getElementById("adminStatus").innerText =
+            "Write an announcement first.";
+        return;
+    }
+
+    localStorage.setItem("barneyAnnouncement", text);
+
+    displayAnnouncement();
+
+    document.getElementById("announcementText").value = "";
+
+    document.getElementById("adminStatus").innerText =
+        "Announcement saved in this browser!";
+}
+
+function displayAnnouncement() {
+
+    const text = localStorage.getItem("barneyAnnouncement");
+    const container =
+        document.getElementById("publicAnnouncement");
+
+    container.innerHTML = "";
+
+    if (text) {
+        const box = document.createElement("div");
+        box.className = "announcement";
+
+        const heading = document.createElement("strong");
+        heading.innerText = "LATEST UPDATE";
+
+        const message = document.createElement("p");
+        message.innerText = text;
+        message.style.marginTop = "10px";
+
+        box.appendChild(heading);
+        box.appendChild(message);
+        container.appendChild(box);
+    }
+}
+
+
+// AUDIO PREVIEW
+
+let previewURL = null;
+
+document.getElementById("audioUpload").addEventListener(
+    "change",
+    function() {
+
+        const file = this.files[0];
+
+        if (!file) return;
+
+        if (previewURL) {
+            URL.revokeObjectURL(previewURL);
+        }
+
+        previewURL = URL.createObjectURL(file);
+
+        const player = document.getElementById("audioPlayer");
+        player.src = previewURL;
+
+        document.getElementById("adminStatus").innerText =
+            "Preview loaded. Press play to listen.";
+    }
+);
+
+function playPreview() {
+
+    const player = document.getElementById("audioPlayer");
+
+    if (!player.src) {
+        document.getElementById("adminStatus").innerText =
+            "Upload an audio file first.";
+        return;
+    }
+
+    player.play();
+}
+
+
 // UPDATE EVERY SECOND
 updateWebsite();
 setInterval(updateWebsite, 1000);
+displayAnnouncement();
 
 </script>
 
