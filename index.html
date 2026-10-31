@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Barney | Late Night Thoughts</title>
+
+<title>BARNEY | LATE NIGHT THOUGHTS</title>
 
 <style>
 * {
@@ -14,14 +15,14 @@
 
 body {
     min-height: 100vh;
-    background: radial-gradient(circle at top, #202c52, #080b18 70%);
+    background: radial-gradient(circle at top, #202c52, #080b18 75%);
     color: white;
     font-family: Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .stars {
@@ -39,14 +40,15 @@ body {
 .content {
     position: relative;
     z-index: 1;
-    padding: 25px;
+    padding: 35px 20px;
+    width: 100%;
 }
 
 .artist {
     color: #a9baff;
-    letter-spacing: 8px;
-    font-size: 16px;
-    margin-bottom: 25px;
+    letter-spacing: 9px;
+    font-size: 17px;
+    margin-bottom: 20px;
 }
 
 h1 {
@@ -59,13 +61,26 @@ h1 {
 .subtitle {
     color: #b8c2df;
     font-size: 17px;
-    margin-bottom: 40px;
+    margin-bottom: 25px;
+}
+
+#cover {
+    width: 280px;
+    max-width: 85%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+    margin: 25px auto 35px;
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity 1s ease;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
 
 .countdown {
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
@@ -73,27 +88,27 @@ h1 {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.2);
     border-radius: 15px;
-    padding: 20px;
-    min-width: 85px;
+    padding: 18px;
+    min-width: 80px;
     backdrop-filter: blur(10px);
 }
 
 .number {
-    font-size: 35px;
+    font-size: 32px;
     font-weight: bold;
 }
 
 .label {
     color: #a9baff;
-    font-size: 11px;
+    font-size: 10px;
     margin-top: 8px;
     letter-spacing: 2px;
 }
 
 .footer {
-    margin-top: 45px;
+    margin-top: 35px;
     color: #8996bb;
-    font-size: 13px;
+    font-size: 12px;
     letter-spacing: 2px;
 }
 
@@ -110,7 +125,15 @@ h1 {
 
     <h1>LATE NIGHT<br>THOUGHTS</h1>
 
-    <p class="subtitle">A new song is coming...</p>
+    <p class="subtitle" id="subtitle">
+        A new song is coming...
+    </p>
+
+    <img
+        id="cover"
+        src="cover.png"
+        alt="Late Night Thoughts album cover"
+    >
 
     <div class="countdown" id="countdown">
 
@@ -144,37 +167,82 @@ h1 {
 
 <script>
 
-const releaseDate = new Date("2026-11-01T12:00:00+00:00").getTime();
+// RELEASE DATE: 1 NOVEMBER 2026 AT 12 PM UK TIME
+const releaseDate =
+    new Date("2026-11-01T12:00:00+00:00").getTime();
 
-function updateCountdown() {
+// COVER REVEAL STARTS: 31 OCTOBER AT MIDNIGHT
+const revealStart =
+    new Date("2026-10-31T00:00:00+00:00").getTime();
+
+// COVER FULLY VISIBLE: 1 NOVEMBER AT 10 AM
+const revealEnd =
+    new Date("2026-11-01T10:00:00+00:00").getTime();
+
+
+function updateWebsite() {
 
     const now = Date.now();
+
+    // GRADUALLY REVEAL THE COVER
+    let progress = (now - revealStart) /
+                   (revealEnd - revealStart);
+
+    progress = Math.max(0, Math.min(1, progress));
+
+    document.getElementById("cover").style.opacity = progress;
+
+
+    // UPDATE COUNTDOWN
     const distance = releaseDate - now;
 
     if (distance <= 0) {
+
         document.getElementById("countdown").innerHTML =
             "<h2>OUT NOW! 🎵</h2>";
 
+        document.getElementById("subtitle").innerText =
+            "LATE NIGHT THOUGHTS IS FINALLY HERE!";
+
         document.getElementById("footer").innerText =
-            "LATE NIGHT THOUGHTS · BARNEY";
+            "BARNEY · LATE NIGHT THOUGHTS";
 
         return;
     }
 
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((distance / (1000 * 60)) % 60);
-    const seconds = Math.floor((distance / 1000) % 60);
+    const days = Math.floor(
+        distance / (1000 * 60 * 60 * 24)
+    );
 
-    document.getElementById("days").innerText = days;
-    document.getElementById("hours").innerText = hours;
-    document.getElementById("minutes").innerText = minutes;
-    document.getElementById("seconds").innerText = seconds;
+    const hours = Math.floor(
+        (distance / (1000 * 60 * 60)) % 24
+    );
 
+    const minutes = Math.floor(
+        (distance / (1000 * 60)) % 60
+    );
+
+    const seconds = Math.floor(
+        (distance / 1000) % 60
+    );
+
+    document.getElementById("days").innerText =
+        String(days).padStart(2, "0");
+
+    document.getElementById("hours").innerText =
+        String(hours).padStart(2, "0");
+
+    document.getElementById("minutes").innerText =
+        String(minutes).padStart(2, "0");
+
+    document.getElementById("seconds").innerText =
+        String(seconds).padStart(2, "0");
 }
 
-updateCountdown();
-setInterval(updateCountdown, 1000);
+
+// UPDATE EVERY SECOND
+updateWebsite();
+setInterval(updateWebsite, 1000);
 
 </script>
 
