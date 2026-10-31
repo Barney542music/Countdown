@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -137,10 +136,6 @@ h1 {
     width: 100%;
 }
 
-.public-audio:empty {
-    display: none;
-}
-
 /* CONTROL ROOM */
 
 .modal {
@@ -230,10 +225,6 @@ h1 {
     cursor: wait;
 }
 
-.panel .secondary {
-    background: #263454;
-}
-
 .panel .close-button {
     background: transparent;
     border: 1px solid #526ba8;
@@ -267,10 +258,6 @@ h1 {
     margin: 20px auto;
 }
 
-#publicAnnouncement:empty {
-    display: none;
-}
-
 .preview-player {
     width: 100%;
     margin-top: 12px;
@@ -282,7 +269,6 @@ h1 {
     }
 }
 </style>
-
 </head>
 
 <body>
@@ -291,55 +277,53 @@ h1 {
 
 <div class="content">
 
-```
-<div class="artist">BARNEY</div>
+    <div class="artist">BARNEY</div>
 
-<h1>LATE NIGHT<br>THOUGHTS</h1>
+    <h1>LATE NIGHT<br>THOUGHTS</h1>
 
-<p class="subtitle" id="subtitle">
-    A new song is coming...
-</p>
+    <p class="subtitle" id="subtitle">
+        A new song is coming...
+    </p>
 
-<img
-    id="cover"
-    src="cover.png"
-    alt="Late Night Thoughts album cover"
->
+    <img
+        id="cover"
+        src="cover.png"
+        alt="Late Night Thoughts album cover"
+    >
 
-<div class="countdown" id="countdown">
-    <div class="box">
-        <div class="number" id="days">00</div>
-        <div class="label">DAYS</div>
+    <div class="countdown" id="countdown">
+        <div class="box">
+            <div class="number" id="days">00</div>
+            <div class="label">DAYS</div>
+        </div>
+
+        <div class="box">
+            <div class="number" id="hours">00</div>
+            <div class="label">HOURS</div>
+        </div>
+
+        <div class="box">
+            <div class="number" id="minutes">00</div>
+            <div class="label">MINUTES</div>
+        </div>
+
+        <div class="box">
+            <div class="number" id="seconds">00</div>
+            <div class="label">SECONDS</div>
+        </div>
     </div>
 
-    <div class="box">
-        <div class="number" id="hours">00</div>
-        <div class="label">HOURS</div>
+    <div id="publicAnnouncement"></div>
+
+    <div class="public-audio" id="publicAudio">
+        <h2>LISTEN TO A PREVIEW</h2>
+        <p id="publicAudioStatus">Loading song preview...</p>
+        <audio id="publicAudioPlayer" controls preload="none" hidden></audio>
     </div>
 
-    <div class="box">
-        <div class="number" id="minutes">00</div>
-        <div class="label">MINUTES</div>
+    <div class="footer" id="footer">
+        OUT 1 NOVEMBER · 12:00 PM UK TIME
     </div>
-
-    <div class="box">
-        <div class="number" id="seconds">00</div>
-        <div class="label">SECONDS</div>
-    </div>
-</div>
-
-<div id="publicAnnouncement"></div>
-
-<div class="public-audio" id="publicAudio">
-    <h2>LISTEN TO A PREVIEW</h2>
-    <p id="publicAudioStatus">Loading song preview...</p>
-    <audio id="publicAudioPlayer" controls preload="none" hidden></audio>
-</div>
-
-<div class="footer" id="footer">
-    OUT 1 NOVEMBER · 12:00 PM UK TIME
-</div>
-```
 
 </div>
 
@@ -348,39 +332,36 @@ h1 {
 <div class="modal" id="loginModal">
     <div class="panel">
 
-```
-    <h2>BARNEY</h2>
-    <p class="panel-subtitle">CONTROL ROOM LOGIN</p>
+        <h2>BARNEY</h2>
+        <p class="panel-subtitle">CONTROL ROOM LOGIN</p>
 
-    <label for="email">Email address</label>
-    <input
-        type="email"
-        id="email"
-        placeholder="Your admin email"
-        autocomplete="username"
-    >
+        <label for="email">Email address</label>
+        <input
+            type="email"
+            id="email"
+            placeholder="Your admin email"
+            autocomplete="username"
+        >
 
-    <label for="password">Password</label>
-    <input
-        type="password"
-        id="password"
-        placeholder="Your admin password"
-        autocomplete="current-password"
-    >
+        <label for="password">Password</label>
+        <input
+            type="password"
+            id="password"
+            placeholder="Your admin password"
+            autocomplete="current-password"
+        >
 
-    <button id="loginButton" onclick="login()">
-        ENTER CONTROL ROOM
-    </button>
+        <button id="loginButton" onclick="login()">
+            ENTER CONTROL ROOM
+        </button>
 
-    <button class="close-button" onclick="closePanels()">
-        CLOSE
-    </button>
+        <button class="close-button" onclick="closePanels()">
+            CLOSE
+        </button>
 
-    <p class="status" id="loginStatus"></p>
+        <p class="status" id="loginStatus"></p>
 
-</div>
-```
-
+    </div>
 </div>
 
 <!-- ADMIN DASHBOARD -->
@@ -388,53 +369,50 @@ h1 {
 <div class="modal" id="adminModal">
     <div class="panel">
 
-```
-    <h2>CONTROL ROOM</h2>
-    <p class="panel-subtitle">WELCOME BACK, BARNEY.</p>
+        <h2>CONTROL ROOM</h2>
+        <p class="panel-subtitle">WELCOME BACK, BARNEY.</p>
 
-    <label for="announcementText">New announcement</label>
+        <label for="announcementText">New announcement</label>
 
-    <textarea
-        id="announcementText"
-        placeholder="Write an update for your visitors..."
-    ></textarea>
+        <textarea
+            id="announcementText"
+            placeholder="Write an update for your visitors..."
+        ></textarea>
 
-    <button id="publishButton" onclick="publishAnnouncement()">
-        PUBLISH ANNOUNCEMENT
-    </button>
+        <button id="publishButton" onclick="publishAnnouncement()">
+            PUBLISH ANNOUNCEMENT
+        </button>
 
-    <p class="status" id="adminStatus"></p>
+        <p class="status" id="adminStatus"></p>
 
-    <label for="audioUpload">Upload a shared song preview</label>
+        <label for="audioUpload">Upload a shared song preview</label>
 
-    <input
-        type="file"
-        id="audioUpload"
-        accept="audio/*"
-    >
+        <input
+            type="file"
+            id="audioUpload"
+            accept="audio/*"
+        >
 
-    <button id="audioUploadButton" onclick="uploadAudio()">
-        UPLOAD PREVIEW FOR EVERYONE
-    </button>
+        <button id="audioUploadButton" onclick="uploadAudio()">
+            UPLOAD PREVIEW FOR EVERYONE
+        </button>
 
-    <p class="status" id="audioStatus">
-        Choose an audio file to share with website visitors.
-    </p>
+        <p class="status" id="audioStatus">
+            Choose an audio file to share with website visitors.
+        </p>
 
-    <audio
-        id="audioPlayer"
-        class="preview-player"
-        controls
-        hidden
-    ></audio>
+        <audio
+            id="audioPlayer"
+            class="preview-player"
+            controls
+            hidden
+        ></audio>
 
-    <button class="close-button" onclick="logout()">
-        LOG OUT
-    </button>
+        <button class="close-button" onclick="logout()">
+            LOG OUT
+        </button>
 
-</div>
-```
-
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -478,8 +456,7 @@ function updateWebsite() {
 
     const cover = document.getElementById("cover");
 
-    // REVEAL THE COVER FROM A THIN LINE AT THE BOTTOM,
-    // EXPANDING UPWARDS UNTIL THE FULL IMAGE IS VISIBLE.
+    // REVEAL THE COVER UPWARDS FROM THE BOTTOM.
 
     cover.style.clipPath =
         `inset(${(1 - progress) * 100}% 0 0 0)`;
@@ -767,6 +744,11 @@ const announcementChannel = supabaseClient
 
 const AUDIO_BUCKET = "song-previews";
 
+let currentPublicAudioUrl = "";
+let pendingPublicAudioUrl = "";
+let isCheckingAudio = false;
+
+
 function showPublicAudio(url) {
 
     const player =
@@ -775,6 +757,21 @@ function showPublicAudio(url) {
     const status =
         document.getElementById("publicAudioStatus");
 
+    if (url === currentPublicAudioUrl) return;
+
+    // If someone is listening, wait until the track finishes
+    // before changing the audio source.
+
+    if (!player.paused && !player.ended) {
+        pendingPublicAudioUrl = url;
+        status.innerText =
+            "A new preview is ready and will appear after this one finishes.";
+        return;
+    }
+
+    currentPublicAudioUrl = url;
+    pendingPublicAudioUrl = "";
+
     player.src = url;
     player.hidden = false;
 
@@ -782,9 +779,25 @@ function showPublicAudio(url) {
 }
 
 
+// Apply a waiting update when the current track finishes.
+
+document.getElementById("publicAudioPlayer")
+    .addEventListener("ended", function() {
+
+        if (pendingPublicAudioUrl) {
+            const newUrl = pendingPublicAudioUrl;
+            showPublicAudio(newUrl);
+        }
+    });
+
+
 // LOAD THE MOST RECENT UPLOADED AUDIO FOR ALL VISITORS
 
 async function loadLatestAudio() {
+
+    if (isCheckingAudio) return;
+
+    isCheckingAudio = true;
 
     const status =
         document.getElementById("publicAudioStatus");
@@ -812,8 +825,12 @@ async function loadLatestAudio() {
             );
 
         if (files.length === 0) {
-            status.innerText =
-                "A song preview will appear here soon.";
+
+            if (!currentPublicAudioUrl) {
+                status.innerText =
+                    "A song preview will appear here soon.";
+            }
+
             return;
         }
 
@@ -830,8 +847,14 @@ async function loadLatestAudio() {
 
         console.error("Audio loading error:", error);
 
-        status.innerText =
-            "The preview couldn't load just yet.";
+        if (!currentPublicAudioUrl) {
+            status.innerText =
+                "The preview couldn't load just yet.";
+        }
+
+    } finally {
+
+        isCheckingAudio = false;
     }
 }
 
@@ -860,8 +883,6 @@ async function uploadAudio() {
         status.innerText = "Please choose an audio file.";
         return;
     }
-
-    // Keep uploads to a sensible size.
 
     const maxSize = 25 * 1024 * 1024;
 
@@ -908,7 +929,7 @@ async function uploadAudio() {
             .from(AUDIO_BUCKET)
             .getPublicUrl(filePath);
 
-        showPublicAudio(publicData.publicUrl);
+        // Update the admin preview.
 
         document.getElementById("audioPlayer").src =
             publicData.publicUrl;
@@ -919,6 +940,10 @@ async function uploadAudio() {
             "Uploaded! Your preview is now available to website visitors.";
 
         fileInput.value = "";
+
+        // Check the latest upload immediately.
+
+        await loadLatestAudio();
 
     } catch (error) {
 
@@ -942,6 +967,10 @@ setInterval(updateWebsite, 1000);
 
 loadLatestAnnouncement();
 loadLatestAudio();
+
+// Check for new audio uploads every 5 seconds.
+
+setInterval(loadLatestAudio, 5000);
 
 </script>
 
