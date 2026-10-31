@@ -39,8 +39,37 @@ body {
 .content {
     position: relative;
     z-index: 1;
-    padding: 35px 20px;
+    padding: 105px 20px 35px;
     width: 100%;
+}
+
+/* YOUTUBE PREMIERE BUTTON */
+
+.youtube-premiere {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(420px, calc(100% - 40px));
+    z-index: 100;
+}
+
+.youtube-premiere a {
+    display: block;
+    padding: 16px 20px;
+    background: #e62117;
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    letter-spacing: 2px;
+    box-shadow: 0 6px 22px rgba(230, 33, 23, 0.25);
+    transition: transform 0.2s, background 0.2s;
+}
+
+.youtube-premiere a:hover {
+    background: #ff3026;
+    transform: translateY(-2px);
 }
 
 .artist {
@@ -74,7 +103,6 @@ h1 {
     clip-path: inset(100% 0 0 0);
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 
-    /* PREVENT DRAGGING OR SELECTING THE HIDDEN COVER */
     user-select: none;
     -webkit-user-select: none;
     -webkit-user-drag: none;
@@ -283,6 +311,18 @@ h1 {
 
 <div class="content">
 
+    <!-- YOUTUBE BUTTON AT TOP -->
+
+    <div class="youtube-premiere">
+        <a
+            href="https://youtu.be/zOmYlsg1qL4"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            ▶ SONG PREMIERE ON YOUTUBE
+        </a>
+    </div>
+
     <div class="artist">BARNEY</div>
 
     <h1>LATE NIGHT<br>THOUGHTS</h1>
@@ -333,7 +373,6 @@ h1 {
     </div>
 
 </div>
-
 <!-- LOGIN WINDOW -->
 
 <div class="modal" id="loginModal">
@@ -421,7 +460,6 @@ h1 {
 
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -462,8 +500,6 @@ function updateWebsite() {
     progress = Math.max(0, Math.min(1, progress));
 
     const cover = document.getElementById("cover");
-
-    // REVEAL THE COVER UPWARDS FROM THE BOTTOM.
 
     cover.style.clipPath =
         `inset(${(1 - progress) * 100}% 0 0 0)`;
@@ -776,19 +812,11 @@ function showPublicAudio(url) {
     const status =
         document.getElementById("publicAudioStatus");
 
-    // Don't restart the player if the preview hasn't changed.
-
     if (url === currentPublicAudioUrl) return;
-
-    // Stop the old preview immediately.
 
     player.pause();
 
-    // Remember the new preview.
-
     currentPublicAudioUrl = url;
-
-    // Replace the old audio source.
 
     player.src = url;
     player.hidden = false;
@@ -848,8 +876,6 @@ async function loadLatestAudio() {
             .storage
             .from(AUDIO_BUCKET)
             .getPublicUrl(latestFile.name);
-
-        // Switch the preview as soon as a new upload is detected.
 
         showPublicAudio(publicData.publicUrl);
 
@@ -939,8 +965,6 @@ async function uploadAudio() {
             .from(AUDIO_BUCKET)
             .getPublicUrl(filePath);
 
-        // Update the admin preview.
-
         const adminPlayer =
             document.getElementById("audioPlayer");
 
@@ -953,8 +977,6 @@ async function uploadAudio() {
             "Uploaded! Your preview is now available to website visitors.";
 
         fileInput.value = "";
-
-        // Check the latest upload immediately.
 
         await loadLatestAudio();
 
